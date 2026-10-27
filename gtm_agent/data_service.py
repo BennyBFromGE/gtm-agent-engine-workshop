@@ -23,6 +23,11 @@ __all__ = [
 # lookups within a run are served without rebuilding.
 _PROFILES = {}
 
+PROSPECT_PROFILE_FIELDS = (
+    "prospect_id", "name", "email", "disqualified", "annual_revenue",
+    "enrichment_source", "engagement_history", "account_details", "tech_stack",
+)
+
 # ---------------------------------------------------------------------------
 # Public data-access functions
 # ---------------------------------------------------------------------------
@@ -63,7 +68,11 @@ def fetch_tech_stack(prospect_id):
 @traceable(run_type="tool", name="get_profile_from_db")
 def get_profile_from_db(prospect_id):
     "Look up a stored prospect profile. Returns {'prospect_profile': record|None}."
-    return {"prospect_profile": _PROFILES.get(prospect_id)}
+    profile = _PROFILES.get(prospect_id)
+    if profile is not None:
+        profile = {k: v for k, v in profile.items() if k in PROSPECT_PROFILE_FIELDS}
+        _PROFILES[prospect_id] = profile
+    return {"prospect_profile": profile}
 
 
 @traceable(run_type="tool", name="save_profile_to_db")
